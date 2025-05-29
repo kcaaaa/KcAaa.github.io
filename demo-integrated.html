@@ -1006,9 +1006,211 @@
     </div>
 
     <script>
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认显示网格视图而非表格视图
+            switchView('grid', document.querySelector('.view-btn:last-child'));
+            
+            // 创建一个展示所有分类内容的函数
+            showAllCategoriesContent();
+        });
+        
         // 当前状态
         let currentContentType = 'all';
-        let currentView = 'table';
+        let currentView = 'grid'; // 默认为网格视图
+
+        // 展示所有分类内容
+        function showAllCategoriesContent() {
+            // 创建各类型内容的容器
+            const gridView = document.querySelector('.grid-view');
+            gridView.innerHTML = ''; // 清空现有内容
+            
+            // 创建类型标题和内容展示区域
+            const categories = [
+                { id: 'all', name: '全部内容', icon: 'fas fa-th-large' },
+                { id: 'digital', name: '数字人', icon: 'fas fa-user' },
+                { id: 'images', name: '图片', icon: 'fas fa-image' },
+                { id: 'videos', name: '视频', icon: 'fas fa-video' },
+                { id: 'music', name: '音乐', icon: 'fas fa-music' },
+                { id: 'documents', name: '文稿', icon: 'fas fa-file-text' }
+            ];
+            
+            // 只显示全部之外的分类
+            categories.slice(1).forEach(category => {
+                // 创建分类标题
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <div class="category-title">
+                        <i class="${category.icon}"></i>
+                        <span>${category.name}</span>
+                    </div>
+                    <a href="#" class="category-more">查看更多 <i class="fas fa-arrow-right"></i></a>
+                `;
+                gridView.appendChild(categoryHeader);
+                
+                // 创建内容网格
+                const contentGrid = document.createElement('div');
+                contentGrid.className = 'content-grid';
+                contentGrid.id = `${category.id}-grid`;
+                gridView.appendChild(contentGrid);
+                
+                // 添加分类间隔
+                const categorySpacer = document.createElement('div');
+                categorySpacer.className = 'category-spacer';
+                gridView.appendChild(categorySpacer);
+                
+                // 填充对应类型的内容
+                populateCategoryContent(category.id, contentGrid);
+            });
+            
+            // 为网格添加自定义样式
+            addCustomStyles();
+        }
+        
+        // 填充分类内容
+        function populateCategoryContent(categoryId, container) {
+            // 获取所有媒体项
+            const allItems = document.querySelectorAll('.media-item');
+            
+            // 创建新的内容集合
+            let newItems = [];
+            
+            // 根据类别筛选和克隆媒体项
+            allItems.forEach(item => {
+                const itemType = item.getAttribute('data-type');
+                
+                if ((categoryId === 'digital' && itemType === '数字人') ||
+                    (categoryId === 'images' && itemType === '图片') ||
+                    (categoryId === 'videos' && itemType === '视频') ||
+                    (categoryId === 'music' && itemType === '音乐') ||
+                    (categoryId === 'documents' && itemType === '文稿')) {
+                    // 克隆节点以在多处使用
+                    const clonedItem = item.cloneNode(true);
+                    newItems.push(clonedItem);
+                }
+            });
+            
+            // 如果该类别没有内容，显示空状态
+            if (newItems.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-inbox"></i>
+                    <p>暂无${getCategoryName(categoryId)}内容</p>
+                `;
+                container.appendChild(emptyState);
+                return;
+            }
+            
+            // 限制每个类别最多显示4个项目
+            newItems = newItems.slice(0, 4);
+            
+            // 添加到容器
+            newItems.forEach(item => {
+                container.appendChild(item);
+            });
+        }
+        
+        // 获取分类名称
+        function getCategoryName(categoryId) {
+            const names = {
+                'digital': '数字人',
+                'images': '图片',
+                'videos': '视频',
+                'music': '音乐',
+                'documents': '文稿'
+            };
+            return names[categoryId] || '内容';
+        }
+        
+        // 添加自定义样式
+        function addCustomStyles() {
+            // 如果已存在自定义样式，则不重复添加
+            if (document.getElementById('custom-category-styles')) {
+                return;
+            }
+            
+            // 创建样式标签
+            const styleElement = document.createElement('style');
+            styleElement.id = 'custom-category-styles';
+            styleElement.textContent = `
+                .category-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin: 24px 0 16px;
+                    padding-bottom: 8px;
+                    border-bottom: 1px solid #ebeef5;
+                }
+                
+                .category-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #303133;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .category-title i {
+                    color: #409EFF;
+                }
+                
+                .category-more {
+                    font-size: 14px;
+                    color: #909399;
+                    text-decoration: none;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+                
+                .category-more:hover {
+                    color: #409EFF;
+                }
+                
+                .category-spacer {
+                    height: 24px;
+                }
+                
+                .empty-state {
+                    width: 100%;
+                    padding: 32px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #909399;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                }
+                
+                .empty-state i {
+                    font-size: 36px;
+                    margin-bottom: 16px;
+                    color: #c0c4cc;
+                }
+                
+                /* 添加响应式样式 */
+                @media (max-width: 768px) {
+                    .category-header {
+                        margin: 16px 0 12px;
+                    }
+                    
+                    .category-title {
+                        font-size: 16px;
+                    }
+                    
+                    .category-more {
+                        font-size: 12px;
+                    }
+                }
+            `;
+            
+            // 添加到文档头部
+            document.head.appendChild(styleElement);
+        }
 
         // 切换内容类型
         function switchContentType(contentType, buttonElement) {
@@ -1016,7 +1218,65 @@
             buttonElement.classList.add('active');
 
             currentContentType = contentType;
-            filterContent();
+            
+            // 获取所有分类容器
+            const categoryGrids = document.querySelectorAll('.content-grid');
+            
+            if (contentType === 'all') {
+                // 显示所有分类
+                document.querySelectorAll('.category-header, .content-grid, .category-spacer').forEach(el => {
+                    el.style.display = '';
+                });
+            } else {
+                // 隐藏所有分类
+                document.querySelectorAll('.category-header, .content-grid, .category-spacer').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // 仅显示选中的分类
+                const selectedGrid = document.getElementById(`${contentType}-grid`);
+                if (selectedGrid) {
+                    // 显示选中分类的标题和内容
+                    selectedGrid.previousElementSibling.style.display = '';
+                    selectedGrid.style.display = '';
+                    
+                    // 重新填充以显示所有该类型的内容
+                    selectedGrid.innerHTML = '';
+                    populateAllTypeContent(contentType, selectedGrid);
+                }
+            }
+        }
+        
+        // 填充特定类型的所有内容
+        function populateAllTypeContent(contentType, container) {
+            // 获取原始媒体项
+            const allItems = Array.from(document.querySelectorAll('.media-item')).map(item => item.cloneNode(true));
+            
+            // 筛选匹配类型的项目
+            const filteredItems = allItems.filter(item => {
+                const itemType = item.getAttribute('data-type');
+                return (contentType === 'digital' && itemType === '数字人') ||
+                       (contentType === 'images' && itemType === '图片') ||
+                       (contentType === 'videos' && itemType === '视频') ||
+                       (contentType === 'music' && itemType === '音乐') ||
+                       (contentType === 'documents' && itemType === '文稿');
+            });
+            
+            // 添加到容器
+            filteredItems.forEach(item => {
+                container.appendChild(item);
+            });
+            
+            // 如果没有内容，显示空状态
+            if (filteredItems.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-inbox"></i>
+                    <p>暂无${getCategoryName(contentType)}内容</p>
+                `;
+                container.appendChild(emptyState);
+            }
         }
 
         // 切换视图
@@ -1029,13 +1289,21 @@
             if (viewType === 'table') {
                 document.querySelector('.table-view').style.display = 'block';
                 document.querySelector('.grid-view').style.display = 'none';
+                
+                // 重置表格视图中的内容筛选
+                filterContent();
             } else {
                 document.querySelector('.table-view').style.display = 'none';
                 document.querySelector('.grid-view').style.display = 'block';
+                
+                // 在网格视图中显示分类内容
+                if (document.querySelector('.category-header') === null) {
+                    showAllCategoriesContent();
+                }
             }
         }
 
-        // 筛选内容
+        // 筛选内容 (用于表格视图)
         function filterContent() {
             // 筛选表格行
             const tableRows = document.querySelectorAll('.content-table tbody tr');
@@ -1052,49 +1320,59 @@
                     row.style.display = 'none';
                 }
             });
-
-            // 筛选网格项
-            const gridItems = document.querySelectorAll('.media-item');
-            gridItems.forEach(item => {
-                const type = item.getAttribute('data-type');
-                if (currentContentType === 'all' || 
-                    (currentContentType === 'digital' && type === '数字人') ||
-                    (currentContentType === 'images' && type === '图片') ||
-                    (currentContentType === 'videos' && type === '视频') ||
-                    (currentContentType === 'music' && type === '音乐') ||
-                    (currentContentType === 'documents' && type === '文稿')) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
         }
 
         // 搜索功能
         document.querySelector('.search-input').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             
-            // 搜索表格
-            const tableRows = document.querySelectorAll('.content-table tbody tr');
-            tableRows.forEach(row => {
-                const fileName = row.cells[1].textContent.toLowerCase();
-                if (fileName.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // 搜索网格
-            const gridItems = document.querySelectorAll('.media-item');
-            gridItems.forEach(item => {
-                const title = item.querySelector('.media-title').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+            if (currentView === 'table') {
+                // 搜索表格
+                const tableRows = document.querySelectorAll('.content-table tbody tr');
+                tableRows.forEach(row => {
+                    const fileName = row.cells[1].textContent.toLowerCase();
+                    if (fileName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            } else {
+                // 搜索网格中的所有媒体项
+                const gridItems = document.querySelectorAll('.media-item');
+                gridItems.forEach(item => {
+                    const title = item.querySelector('.media-title').textContent.toLowerCase();
+                    const parent = item.parentElement;
+                    
+                    if (title.includes(searchTerm)) {
+                        item.style.display = '';
+                        
+                        // 确保父容器和标题也可见
+                        if (parent.classList.contains('content-grid')) {
+                            parent.style.display = '';
+                            parent.previousElementSibling.style.display = '';
+                        }
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // 隐藏空的分类
+                document.querySelectorAll('.content-grid').forEach(grid => {
+                    const visibleItems = grid.querySelectorAll('.media-item[style="display: none;"]').length;
+                    const totalItems = grid.querySelectorAll('.media-item').length;
+                    
+                    if (visibleItems === totalItems) {
+                        grid.style.display = 'none';
+                        grid.previousElementSibling.style.display = 'none';
+                        
+                        // 隐藏分类间隔
+                        if (grid.nextElementSibling && grid.nextElementSibling.classList.contains('category-spacer')) {
+                            grid.nextElementSibling.style.display = 'none';
+                        }
+                    }
+                });
+            }
         });
 
         // 删除功能
@@ -1116,6 +1394,25 @@
                 const item = e.target.closest('.media-item');
                 const title = item.querySelector('.media-title').textContent;
                 console.log('打开媒体项:', title);
+            }
+        });
+
+        // 查看更多点击事件
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.category-more')) {
+                e.preventDefault();
+                const categoryHeader = e.target.closest('.category-header');
+                const categoryGrid = categoryHeader.nextElementSibling;
+                const categoryId = categoryGrid.id.replace('-grid', '');
+                
+                // 找到对应的标签并触发点击
+                const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
+                    return btn.onclick.toString().includes(`'${categoryId}'`);
+                });
+                
+                if (tabBtn) {
+                    tabBtn.click();
+                }
             }
         });
 
