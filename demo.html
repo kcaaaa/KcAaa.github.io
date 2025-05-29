@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>融媒体AI创作平台 - 声音模型选择</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .browser-frame {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .browser-header {
+            height: 50px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .browser-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .control-dot.red { background: #ff5f57; }
+        .control-dot.yellow { background: #ffbd2e; }
+        .control-dot.green { background: #28ca42; }
+
+        .browser-url {
+            flex: 1;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .main-content {
+            background: #f5f7fa;
+            min-height: 600px;
+        }
+
+        .modal-overlay {
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            width: 90%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #303133;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #909399;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #409EFF;
+        }
+
+        .region-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .region-buttons {
+            display: flex;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .region-btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-right: 1px solid #dcdfe6;
+        }
+
+        .region-btn:last-child {
+            border-right: none;
+        }
+
+        .region-btn.active {
+            background: #409EFF;
+            color: white;
+        }
+
+        .region-btn:hover:not(.active) {
+            background: #f5f7fa;
+        }
+
+        .region-icon {
+            margin-right: 8px;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .model-card {
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .model-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-card.selected {
+            border-color: #409EFF;
+            background: #f0f9ff;
+        }
+
+        .model-card.advanced {
+            border-color: #409EFF;
+            background: #f0f9ff;
+        }
+
+        .model-card.premium {
+            background: #fdf6ec;
+        }
+
+        .model-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f5f7fa;
+        }
+
+        .model-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .model-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .model-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #303133;
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .beta-tag {
+            font-size: 12px;
+            color: #409EFF;
+            font-weight: 400;
+        }
+
+        .model-description {
+            font-size: 14px;
+            color: #606266;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .model-card.disabled .model-description {
+            color: #C0C4CC;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 24px 16px;
+                margin: 20px;
+            }
+            
+            .model-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .region-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-frame">
+        <div class="browser-header">
+            <div class="browser-controls">
+                <span class="control-dot red"></span>
+                <span class="control-dot yellow"></span>
+                <span class="control-dot green"></span>
+            </div>
+            <div class="browser-url">融媒体AI创作平台 - 声音模型选择</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="modalTitle">声音模型</h2>
+                        <button class="close-btn" onclick="closeModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- 地区切换按钮组 -->
+                    <div class="region-selector">
+                        <div class="region-buttons">
+                            <button class="region-btn active" onclick="switchRegion('zh-CN', this)">
+                                <i class="fas fa-flag region-icon"></i>
+                                中国
+                            </button>
+                            <button class="region-btn" onclick="switchRegion('en-US', this)">
+                                <i class="fas fa-flag region-icon"></i>
+                                English
+                            </button>
+                            <button class="region-btn" onclick="switchRegion('ja-JP', this)">
+                                <i class="fas fa-flag region-icon"></i>
+                                日本語
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 声音模型选择区域 -->
+                    <div class="model-grid">
+                        <!-- 普通品质 -->
+                        <div class="model-card" id="normalCard" onclick="selectModel('normal', this)">
+                            <div class="model-icon">
+                                <i class="fas fa-music" style="color: #409EFF;"></i>
+                            </div>
+                            <h3 class="model-title" id="normalTitle">普通品质</h3>
+                            <p class="model-description" id="normalDesc">
+                                上传15s-2min音频，快速克隆个人音质，还原风格，口音和语学环境
+                            </p>
+                        </div>
+
+                        <!-- 进阶音质 -->
+                        <div class="model-card advanced" id="advancedCard" onclick="selectModel('advanced', this)">
+                            <div class="model-icon">
+                                <i class="fas fa-music" style="color: #409EFF;"></i>
+                            </div>
+                            <h3 class="model-title" id="advancedTitle">
+                                进阶音质
+                                <span class="beta-tag" id="betaTag">(Beta)</span>
+                            </h3>
+                            <p class="model-description" id="advancedDesc">
+                                上传15s-2min音频，克隆个人音质，形成两百万条，源在进阶版本正式开放公司，敬请期待！
+                            </p>
+                        </div>
+
+                        <!-- 优质音质 -->
+                        <div class="model-card premium" id="premiumCard" onclick="selectModel('premium', this)">
+                            <div class="model-icon">
+                                <i class="fas fa-star" style="color: #E6A23C;"></i>
+                            </div>
+                            <h3 class="model-title" id="premiumTitle">优质音质</h3>
+                            <p class="model-description" id="premiumDesc">
+                                上传15s-2min音频，高度还原个人音特点，逼近风格，口音和语学环境
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的地区和模型
+        let currentRegion = 'zh-CN';
+        let selectedModel = '';
+
+        // 地区配置
+        const regionConfig = {
+            'zh-CN': {
+                supportedModels: ['normal', 'advanced', 'premium'],
+                texts: {
+                    title: '声音模型',
+                    normal: {
+                        title: '普通品质',
+                        description: '上传15s-2min音频，快速克隆个人音质，还原风格，口音和语学环境'
+                    },
+                    advanced: {
+                        title: '进阶音质',
+                        subtitle: '(Beta)',
+                        description: '上传15s-2min音频，克隆个人音质，形成两百万条，源在进阶版本正式开放公司，敬请期待！'
+                    },
+                    premium: {
+                        title: '优质音质',
+                        description: '上传15s-2min音频，高度还原个人音特点，逼近风格，口音和语学环境'
+                    },
+                    notSupported: '该功能暂不支持此地区'
+                }
+            },
+            'en-US': {
+                supportedModels: ['advanced'],
+                texts: {
+                    title: 'Voice Models',
+                    normal: {
+                        title: 'Standard Quality',
+                        description: 'This feature is not supported in this region'
+                    },
+                    advanced: {
+                        title: 'Advanced Quality',
+                        subtitle: '(Beta)',
+                        description: 'Upload 15s-2min audio to clone personal voice quality, forming millions of samples. Stay tuned for the official release!'
+                    },
+                    premium: {
+                        title: 'Premium Quality',
+                        description: 'This feature is not supported in this region'
+                    },
+                    notSupported: 'This feature is not supported in this region'
+                }
+            },
+            'ja-JP': {
+                supportedModels: ['advanced'],
+                texts: {
+                    title: '音声モデル',
+                    normal: {
+                        title: '標準品質',
+                        description: 'この機能はこの地域ではサポートされていません'
+                    },
+                    advanced: {
+                        title: '高度な品質',
+                        subtitle: '(ベータ)',
+                        description: '15秒〜2分の音声をアップロードして個人の音質をクローンし、数百万のサンプルを形成します。正式リリースをお楽しみに！'
+                    },
+                    premium: {
+                        title: 'プレミアム品質',
+                        description: 'この機能はこの地域ではサポートされていません'
+                    },
+                    notSupported: 'この機能はこの地域ではサポートされていません'
+                }
+            }
+        };
+
+        // 检查模型是否支持
+        function isModelSupported(modelType) {
+            return regionConfig[currentRegion].supportedModels.includes(modelType);
+        }
+
+        // 切换地区
+        function switchRegion(regionCode, buttonElement) {
+            currentRegion = regionCode;
+            selectedModel = '';
+
+            // 更新按钮状态
+            document.querySelectorAll('.region-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            // 更新界面文本
+            updateTexts();
+            updateModelStates();
+        }
+
+        // 更新界面文本
+        function updateTexts() {
+            const texts = regionConfig[currentRegion].texts;
+            
+            document.getElementById('modalTitle').textContent = texts.title;
+            document.getElementById('normalTitle').textContent = texts.normal.title;
+            document.getElementById('advancedTitle').innerHTML = `
+                ${texts.advanced.title}
+                <span class="beta-tag">${texts.advanced.subtitle}</span>
+            `;
+            document.getElementById('premiumTitle').textContent = texts.premium.title;
+            
+            // 更新描述文本
+            document.getElementById('normalDesc').textContent = 
+                isModelSupported('normal') ? texts.normal.description : texts.notSupported;
+            document.getElementById('advancedDesc').textContent = texts.advanced.description;
+            document.getElementById('premiumDesc').textContent = 
+                isModelSupported('premium') ? texts.premium.description : texts.notSupported;
+        }
+
+        // 更新模型状态
+        function updateModelStates() {
+            const models = ['normal', 'advanced', 'premium'];
+            
+            models.forEach(model => {
+                const card = document.getElementById(model + 'Card');
+                const isSupported = isModelSupported(model);
+                
+                if (isSupported) {
+                    card.classList.remove('disabled');
+                } else {
+                    card.classList.add('disabled');
+                }
+                
+                // 清除选中状态
+                card.classList.remove('selected');
+            });
+        }
+
+        // 选择模型
+        function selectModel(modelType, cardElement) {
+            if (!isModelSupported(modelType)) {
+                return;
+            }
+
+            // 清除之前的选中状态
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // 设置新的选中状态
+            cardElement.classList.add('selected');
+            selectedModel = modelType;
+
+            console.log('选中模型:', modelType, '地区:', currentRegion);
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            console.log('关闭模态框');
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTexts();
+            updateModelStates();
+        });
+    </script>
+</body>
+</html> 
