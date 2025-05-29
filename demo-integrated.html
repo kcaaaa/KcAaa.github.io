@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>融媒体AI创作平台 - 综合版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .browser-frame {
+            width: 100%;
+            max-width: 1600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            height: 900px;
+        }
+
+        .browser-header {
+            height: 50px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .browser-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .control-dot.red { background: #ff5f57; }
+        .control-dot.yellow { background: #ffbd2e; }
+        .control-dot.green { background: #28ca42; }
+
+        .browser-url {
+            flex: 1;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .main-layout {
+            display: flex;
+            height: 850px;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 220px;
+            background: #f8f9fa;
+            border-right: 1px solid #e4e7ed;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .platform-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #e4e7ed;
+            margin-bottom: 20px;
+        }
+
+        .platform-logo i {
+            width: 24px;
+            height: 24px;
+            background: #409EFF;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .platform-logo span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #606266;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: #ecf5ff;
+            color: #409EFF;
+        }
+
+        .nav-link.active {
+            background: #ecf5ff;
+            color: #409EFF;
+            border-right: 3px solid #409EFF;
+        }
+
+        .nav-link i {
+            width: 16px;
+            text-align: center;
+        }
+
+        /* 右侧内容区域 */
+        .content-area {
+            flex: 1;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部工具栏 */
+        .top-toolbar {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e4e7ed;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .create-btn {
+            background: #409EFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .create-btn:hover {
+            background: #337ecc;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #606266;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #409EFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* 内容主体 */
+        .content-main {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .page-title i {
+            color: #67C23A;
+        }
+
+        /* 内容类型切换标签 */
+        .content-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #606266;
+        }
+
+        .tab-btn.active {
+            background: #409EFF;
+            color: white;
+            box-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f5f7fa;
+            color: #409EFF;
+        }
+
+        /* 视图切换按钮 */
+        .view-toggle {
+            display: flex;
+            background: white;
+            border-radius: 6px;
+            padding: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-left: 16px;
+        }
+
+        .view-btn {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            color: #606266;
+        }
+
+        .view-btn.active {
+            background: #409EFF;
+            color: white;
+        }
+
+        /* 内容容器 */
+        .content-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e4e7ed;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 240px;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #409EFF;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #c0c4cc;
+        }
+
+        /* 表格视图 */
+        .table-view {
+            display: block;
+        }
+
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .content-table th,
+        .content-table td {
+            padding: 16px 24px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .content-table th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #606266;
+            font-size: 14px;
+        }
+
+        .content-table td {
+            color: #303133;
+            font-size: 14px;
+        }
+
+        .content-table tr:hover {
+            background: #f5f7fa;
+        }
+
+        .file-name-link {
+            color: #409EFF;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .file-name-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.completed {
+            background: #f0f9ff;
+            color: #67C23A;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: none;
+            background: transparent;
+            color: #F56C6C;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #fef0f0;
+        }
+
+        /* 网格视图 */
+        .grid-view {
+            display: none;
+            padding: 24px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .media-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .media-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .media-thumbnail {
+            width: 100%;
+            height: 150px;
+            position: relative;
+            overflow: hidden;
+            background: #f5f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-thumbnail .placeholder-icon {
+            font-size: 48px;
+            color: #c0c4cc;
+        }
+
+        .media-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .media-item:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #409EFF;
+            font-size: 20px;
+        }
+
+        .media-info {
+            padding: 16px;
+        }
+
+        .media-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #303133;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .media-meta {
+            font-size: 12px;
+            color: #909399;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px;
+            border-top: 1px solid #e4e7ed;
+        }
+
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #dcdfe6;
+            background: white;
+            color: #606266;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover {
+            border-color: #409EFF;
+            color: #409EFF;
+        }
+
+        .page-btn.active {
+            background: #409EFF;
+            border-color: #409EFF;
+            color: white;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e4e7ed;
+            }
+            
+            .content-container {
+                overflow-x: auto;
+            }
+            
+            .search-input {
+                width: 180px;
+            }
+
+            .content-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .content-tabs {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .tab-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-frame">
+        <div class="browser-header">
+            <div class="browser-controls">
+                <span class="control-dot red"></span>
+                <span class="control-dot yellow"></span>
+                <span class="control-dot green"></span>
+            </div>
+            <div class="browser-url">融媒体AI创作平台 - 综合版</div>
+        </div>
+        
+        <div class="main-layout">
+            <!-- 左侧导航栏 -->
+            <div class="sidebar">
+                <div class="platform-logo">
+                    <i class="fas fa-circle"></i>
+                    <span>融豆AI创作平台</span>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-home"></i>
+                            <span>首页</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-file-text"></i>
+                            <span>文稿</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-image"></i>
+                            <span>配图</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-video"></i>
+                            <span>视频</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-user"></i>
+                            <span>数字人</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-music"></i>
+                            <span>配乐</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-magic"></i>
+                            <span>专利助手</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>知识库</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-user-circle"></i>
+                            <span>个人中心</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-folder"></i>
+                            <span>最近创作</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-list"></i>
+                            <span>查看全部</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-phone"></i>
+                            <span>联系我们</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 右侧内容区域 -->
+            <div class="content-area">
+                <!-- 顶部工具栏 -->
+                <div class="top-toolbar">
+                    <div class="toolbar-left">
+                        <button class="create-btn">
+                            <i class="fas fa-plus"></i>
+                            我的创作
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <span class="user-info">
+                            <span>操作手册</span>
+                            <i class="fas fa-question-circle"></i>
+                        </span>
+                        <span class="user-info">
+                            <span>65723</span>
+                            <i class="fas fa-coins"></i>
+                        </span>
+                        <div class="user-avatar">头</div>
+                    </div>
+                </div>
+
+                <!-- 内容主体 -->
+                <div class="content-main">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <i class="fas fa-sparkles"></i>
+                            我的创作
+                        </div>
+                        
+                        <div style="display: flex; align-items: center;">
+                            <!-- 内容类型切换标签 -->
+                            <div class="content-tabs">
+                                <button class="tab-btn active" onclick="switchContentType('all', this)">
+                                    全部
+                                </button>
+                                <button class="tab-btn" onclick="switchContentType('documents', this)">
+                                    <i class="fas fa-file-text"></i>
+                                    文稿
+                                </button>
+                                <button class="tab-btn" onclick="switchContentType('images', this)">
+                                    <i class="fas fa-image"></i>
+                                    图片
+                                </button>
+                                <button class="tab-btn" onclick="switchContentType('videos', this)">
+                                    <i class="fas fa-video"></i>
+                                    视频
+                                </button>
+                                <button class="tab-btn" onclick="switchContentType('music', this)">
+                                    <i class="fas fa-music"></i>
+                                    音乐
+                                </button>
+                                <button class="tab-btn" onclick="switchContentType('digital', this)">
+                                    <i class="fas fa-user"></i>
+                                    数字人
+                                </button>
+                            </div>
+
+                            <!-- 视图切换按钮 -->
+                            <div class="view-toggle">
+                                <button class="view-btn active" onclick="switchView('table', this)">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button class="view-btn" onclick="switchView('grid', this)">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 内容容器 -->
+                    <div class="content-container">
+                        <div class="content-header">
+                            <div class="content-title">内容列表</div>
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" placeholder="搜索历史创作">
+                            </div>
+                        </div>
+                        
+                        <!-- 表格视图 -->
+                        <div class="table-view">
+                            <table class="content-table">
+                                <thead>
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>文件名称</th>
+                                        <th>文件类型</th>
+                                        <th>生成状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-type="数字人">
+                                        <td>1</td>
+                                        <td><a href="#" class="file-name-link">我来测试16：9视频</a></td>
+                                        <td>数字人</td>
+                                        <td><span class="status-badge completed">已完成</span></td>
+                                        <td>2025-05-28 10:11:58</td>
+                                        <td>
+                                            <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr data-type="数字人">
+                                        <td>2</td>
+                                        <td><a href="#" class="file-name-link">我来测试视频16：9</a></td>
+                                        <td>数字人</td>
+                                        <td><span class="status-badge completed">已完成</span></td>
+                                        <td>2025-05-28 10:11:34</td>
+                                        <td>
+                                            <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr data-type="数字人">
+                                        <td>3</td>
+                                        <td><a href="#" class="file-name-link">我来测试视频</a></td>
+                                        <td>数字人</td>
+                                        <td><span class="status-badge completed">已完成</span></td>
+                                        <td>2025-05-28 10:11:13</td>
+                                        <td>
+                                            <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr data-type="图片">
+                                        <td>4</td>
+                                        <td><a href="#" class="file-name-link">生成一个海报，主题是端午节用，海报中下方不要文字...</a></td>
+                                        <td>图片</td>
+                                        <td><span class="status-badge completed">已完成</span></td>
+                                        <td>2025-05-23 19:23:00</td>
+                                        <td>
+                                            <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr data-type="图片">
+                                        <td>5</td>
+                                        <td><a href="#" class="file-name-link">小猫在地上坐着</a></td>
+                                        <td>图片</td>
+                                        <td><span class="status-badge completed">已完成</span></td>
+                                        <td>2025-05-23 19:21:42</td>
+                                        <td>
+                                            <button class="action-btn"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 网格视图 -->
+                        <div class="grid-view">
+                            <div class="content-grid">
+                                <!-- 数字人内容 -->
+                                <div class="media-item" data-type="数字人">
+                                    <div class="media-thumbnail">
+                                        <i class="fas fa-user placeholder-icon"></i>
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-user"></i>
+                                            数字人
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">我来测试16：9视频</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-28</span>
+                                            <span class="status-badge completed">已完成</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="media-item" data-type="数字人">
+                                    <div class="media-thumbnail">
+                                        <i class="fas fa-user placeholder-icon"></i>
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-user"></i>
+                                            数字人
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">我来测试视频16：9</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-28</span>
+                                            <span class="status-badge completed">已完成</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 图片内容 -->
+                                <div class="media-item" data-type="图片">
+                                    <div class="media-thumbnail">
+                                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" alt="端午节海报">
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-image"></i>
+                                            PNG
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">生成一个海报，主题是端午节用，海报中下方不要文字...</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-23</span>
+                                            <span class="status-badge completed">已完成</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="media-item" data-type="图片">
+                                    <div class="media-thumbnail">
+                                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop" alt="小猫图片">
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-image"></i>
+                                            JPG
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">小猫在地上坐着</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-23</span>
+                                            <span class="status-badge completed">已完成</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 视频内容 -->
+                                <div class="media-item" data-type="视频">
+                                    <div class="media-thumbnail">
+                                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=300&fit=crop" alt="视频缩略图">
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-video"></i>
+                                            MP4
+                                        </div>
+                                        <div class="play-overlay">
+                                            <div class="play-btn">
+                                                <i class="fas fa-play"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">产品介绍视频</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-27</span>
+                                            <span>05:30</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 音乐内容 -->
+                                <div class="media-item" data-type="音乐">
+                                    <div class="media-thumbnail">
+                                        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop" alt="音乐封面">
+                                        <div class="media-type-badge">
+                                            <i class="fas fa-music"></i>
+                                            MP3
+                                        </div>
+                                        <div class="play-overlay">
+                                            <div class="play-btn">
+                                                <i class="fas fa-play"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="media-info">
+                                        <div class="media-title">轻松的背景音乐</div>
+                                        <div class="media-meta">
+                                            <span>2025-05-26</span>
+                                            <span>03:45</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 分页 -->
+                        <div class="pagination">
+                            <button class="page-btn disabled">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">5</button>
+                            <span style="margin: 0 8px; color: #909399;">...</span>
+                            <button class="page-btn">45</button>
+                            <button class="page-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前状态
+        let currentContentType = 'all';
+        let currentView = 'table';
+
+        // 切换内容类型
+        function switchContentType(contentType, buttonElement) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            currentContentType = contentType;
+            filterContent();
+        }
+
+        // 切换视图
+        function switchView(viewType, buttonElement) {
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            currentView = viewType;
+            
+            if (viewType === 'table') {
+                document.querySelector('.table-view').style.display = 'block';
+                document.querySelector('.grid-view').style.display = 'none';
+            } else {
+                document.querySelector('.table-view').style.display = 'none';
+                document.querySelector('.grid-view').style.display = 'block';
+            }
+        }
+
+        // 筛选内容
+        function filterContent() {
+            // 筛选表格行
+            const tableRows = document.querySelectorAll('.content-table tbody tr');
+            tableRows.forEach(row => {
+                const type = row.getAttribute('data-type');
+                if (currentContentType === 'all' || 
+                    (currentContentType === 'digital' && type === '数字人') ||
+                    (currentContentType === 'images' && type === '图片') ||
+                    (currentContentType === 'videos' && type === '视频') ||
+                    (currentContentType === 'music' && type === '音乐') ||
+                    (currentContentType === 'documents' && type === '文稿')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // 筛选网格项
+            const gridItems = document.querySelectorAll('.media-item');
+            gridItems.forEach(item => {
+                const type = item.getAttribute('data-type');
+                if (currentContentType === 'all' || 
+                    (currentContentType === 'digital' && type === '数字人') ||
+                    (currentContentType === 'images' && type === '图片') ||
+                    (currentContentType === 'videos' && type === '视频') ||
+                    (currentContentType === 'music' && type === '音乐') ||
+                    (currentContentType === 'documents' && type === '文稿')) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 搜索功能
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            // 搜索表格
+            const tableRows = document.querySelectorAll('.content-table tbody tr');
+            tableRows.forEach(row => {
+                const fileName = row.cells[1].textContent.toLowerCase();
+                if (fileName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // 搜索网格
+            const gridItems = document.querySelectorAll('.media-item');
+            gridItems.forEach(item => {
+                const title = item.querySelector('.media-title').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // 删除功能
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.action-btn')) {
+                const row = e.target.closest('tr');
+                const fileName = row.cells[1].textContent;
+                
+                if (confirm(`确定要删除 "${fileName}" 吗？`)) {
+                    row.remove();
+                    console.log('删除文件:', fileName);
+                }
+            }
+        });
+
+        // 媒体项点击事件
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.media-item')) {
+                const item = e.target.closest('.media-item');
+                const title = item.querySelector('.media-title').textContent;
+                console.log('打开媒体项:', title);
+            }
+        });
+
+        // 文件名点击事件
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('file-name-link')) {
+                e.preventDefault();
+                const fileName = e.target.textContent;
+                console.log('打开文件:', fileName);
+            }
+        });
+
+        // 分页功能
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.page-btn') && !e.target.closest('.page-btn').classList.contains('disabled')) {
+                document.querySelectorAll('.page-btn.active').forEach(btn => btn.classList.remove('active'));
+                
+                if (!e.target.closest('.page-btn').innerHTML.includes('chevron')) {
+                    e.target.closest('.page-btn').classList.add('active');
+                }
+                
+                console.log('切换页面');
+            }
+        });
+    </script>
+</body>
+</html> 
